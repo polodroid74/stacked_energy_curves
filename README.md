@@ -1,2 +1,4 @@
 # stacked_energy_curves
-stacked primary energy curves from our world in data data
+Draw stacked primary energy curves from our world in data csv file.
+
+**Usage : Rscript stacked_from_owid.R [CSV FILE FROM OUR WORLD IN DATA] [OUTPUT PNG FILE]**
