@@ -1,9 +1,19 @@
 library(ggplot2)
 
 
-plot_energy <- function(colors, img_file){
+plot_energy <- function(colors, stacked, img_file){
 
-  time  <- rep(csv_data$t, each=length(energies))
+  energies=c("nuke",
+             "solar",
+             "wind",
+             "hydro",
+             "other_renew",
+             "biomass",
+             "coal",
+             "petrol",
+             "gaz")
+  
+  time  <- rep(csv_data$time, each=length(energies))
   value <- stacked
   group <- rep(energies,times=length(stacked)/length(energies))
   
@@ -36,35 +46,46 @@ plot_energy <- function(colors, img_file){
 
 #Here starts the script
 
+twh_to_tep=86000
+tep_to_gtep=1e9
+
 args <- commandArgs(trailingOnly = TRUE)
 filename=args[1]
 out_pdf=args[2]
 print(filename)
 
 csv_data=read.table(filename,
-                    header=TRUE)
+                    header=TRUE,
+                    sep=",")
 
-energies=c("nuke",
-           "solar",
-           "wind",
-           "hydro",
-           "other_renew",
-           "biomass",
-           "coal",
-           "petrol",
-           "gaz")
-
-data_names = c("time",
-               energies)
+energies_raw=c("other_renew",
+               "biomass",
+               "solar",
+               "wind",
+               "hydro",
+               "nuke", 
+               "gaz",
+               "oil",
+               "coal",
+               "biomass_trad")
+data_names = c("time", energies_raw)
 names(csv_data) = data_names
 
-stacked=c()
+nuke=c(as.numeric(as.vector(csv_data[["nuke"]])))*twh_to_tep/tep_to_gtep
+solar=c(as.numeric(as.vector(csv_data[["solar"]])))*twh_to_tep/tep_to_gtep
+wind=c(as.numeric(as.vector(csv_data[["wind"]])))*twh_to_tep/tep_to_gtep
+hydro=c(as.numeric(as.vector(csv_data[["hydro"]])))*twh_to_tep/tep_to_gtep
+other_renew=c(as.numeric(as.vector(csv_data[["other_renew"]])))*twh_to_tep/tep_to_gtep
+biomass=c(as.numeric(as.vector(csv_data[["biomass"]]))+as.numeric(as.vector(csv_data[["biomass_trad"]])))*twh_to_tep/tep_to_gtep
+coal=c(as.numeric(as.vector(csv_data[["coal"]])))*twh_to_tep/tep_to_gtep
+petrol=c(as.numeric(as.vector(csv_data[["oil"]])))*twh_to_tep/tep_to_gtep
+gaz=c(as.numeric(as.vector(csv_data[["gaz"]])))*twh_to_tep/tep_to_gtep
+
+stacked_data=c()
 for(r in 1: nrow(csv_data)){
-  for(c in 1 : length(energies)){
-    column=as.vector(csv_data[[energies[c]]])
-    stacked=c(stacked, as.numeric(column[r]))
-  }
+    stacked_data=c(stacked_data, nuke[r], solar[r], wind[r], hydro[r], other_renew[r], biomass[r], coal[r], petrol[r], gaz[r])
 }
+
 colors=c("gray45",
          "gray45",
          "gray45",
@@ -74,7 +95,7 @@ colors=c("gray45",
          "gray45",
          "gray45",
          "gray45")
-plot_energy(colors, paste("1", args[2], sep="_"))
+plot_energy(colors, stacked_data, paste("1", args[2], sep="_"))
 
 colors=c("forestgreen",
          "gray45",
@@ -85,7 +106,7 @@ colors=c("forestgreen",
          "gray45",
          "gray45",
          "gray45")
-plot_energy(colors, paste("2", args[2], sep="_"))
+plot_energy(colors, stacked_data, paste("2", args[2], sep="_"))
 
 colors=c("forestgreen",
          "orangered4",
@@ -96,7 +117,7 @@ colors=c("forestgreen",
          "gray45",
          "gray45",
          "gray45")
-plot_energy(colors, paste("3", args[2], sep="_"))
+plot_energy(colors, stacked_data, paste("3", args[2], sep="_"))
 
 
 colors=c("forestgreen",
@@ -108,4 +129,4 @@ colors=c("forestgreen",
          "steelblue1",
          "yellow2",
          "palegreen1")
-plot_energy(colors, paste("4", args[2], sep="_"))
+plot_energy(colors, stacked_data, paste("4", args[2], sep="_"))
